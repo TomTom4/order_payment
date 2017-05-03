@@ -16,6 +16,9 @@ urlpatterns = [
 	url(r'^create_sku/(?P<ids>([0-9]*,?[0-9])*)/$', views.create_sku, name="create_sku_display"),
 	url(r'^display_sku/(?P<ids>([0-9]*,?[0-9])*)/$', views.display_sku, name="display_sku"),
 	url(r'^lower_sku_quantity/(?P<sku_id>sku_.*)/$', views.lower_sku_quantity, name="lower_sku_quantity"), 
+	url(r'^delete_sku/(?P<sku_id>sku_.*)/$', views.delete_sku, name="delete_sku"), 
+	url(r'^delete_product/(?P<product_id>[0-9]+)/$', views.delete_product, name='delete_product'),
+
 	]
 
 

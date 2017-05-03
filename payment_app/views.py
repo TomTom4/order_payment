@@ -149,13 +149,18 @@ def delete_sku(request, sku_id):
 	stripe.api_key=settings.STRIPE_SECRET_KEY
 	a_sku = stripe.SKU.retrieve(sku_id)
 	a_sku.delete()
+	return redirect(request.META['HTTP_REFERER'])
+
 
 def delete_product(request, product_id):
 	# needed to retrieve the product
 	stripe.api_key=settings.STRIPE_SECRET_KEY
 	a_product = get_object_or_404(Product, id = product_id)
 	stripe_product = stripe.Product.retrieve(a_product.stripe_identifier)
+	for sku in stripe_product.skus['data']:
+		sku.delete()
 	stripe_product.delete()
+	return redirect(request.META['HTTP_REFERER'])
 
 
 
