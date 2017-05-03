@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+	<head>
+	</head>
+	<body>
+		<h1> Product List </h1>
+		{% if product_list %}
+    			<ul>
+    			{% for product in product_list %}
+        			<li>
+					<a href="{% url 'merchandise_details' product.id %}">{{ product.description }}</a>
+				</li>
+    			{% endfor %}
+    			</ul>
+		{% else %}
+    			<p>No polls are available.</p>
+		{% endif %}	
+		<h1> Purchased_List </h1>
+		{% if purchased_list %} 
+    			<ul>
+    			{% for purchased in purchased_list %}
+        			<li>
+					<p>{{ purchased.product.description }}</p>
+					<a href=" {% url 'cancel_purchase' purchased.id %}">cancel purchase </a>
+				</li>
+    			{% endfor %}
+    			</ul>
+		{% else %}
+    			<p>you don't have any items into your bucket</p>
+		{% endif %}
+		<a href={% url 'pay_page' %}>finalize purchase and pay</a>
+		<h1> Cancel_al_purchases </h1>
+		<a href={% url 'cancel_all_purchases' %}>CANCEL ALL </a>
+
+	</body>
+</html>

@@ -1,0 +1,21 @@
+{% extends "admin/base_site.html"%}
+{% load i18n admin_urls %}
+{% block content %}
+
+{% for product in product_list %}
+
+	<h1>{{product.name}}</h1>
+	<form action="{% url 'create_sku_on_stripe' product.id %}" method='POST'>{% csrf_token %}
+		{% for a_key in product|get_attribute_dict_keys %}
+		<select name ={{ a_key }}>
+			{% for an_element in product|get_attribute_list_by_key:a_key %}
+			<option value="{{ an_element }}">{{ an_element }}</option>
+			{% endfor %}
+		</select>
+		{% endfor %}
+		<input type="number" name="quantity" min="1" max="100">
+		<input type="submit" value="add to stripe">
+
+	</form>
+{% endfor %}
+{%endblock%}		

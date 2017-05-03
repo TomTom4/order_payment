@@ -1,0 +1,25 @@
+<!doctype html>
+
+<html lang="en">
+	<head>	
+		<meta charset="utf-8">
+		<title> pay_page </title>
+	</head>
+	<body>
+		<h1> pay your shit : </h1>
+		<form action="{% url 'payment'%}" method="POST">{% csrf_token %}
+			<script
+    				src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+    				data-key= {{ publishable_key }}
+    				data-amount={{ amount }}
+    				data-name="Thomas_make_you_pay.com"
+				data-description ={{ description }}
+    				data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
+    				data-locale="auto"
+    				data-zip-code="true">
+			</script>
+			<input type="hidden" name="amount" value={{amount}}>
+			<input type="hidden" name="description" value={{description}}>
+		</form>
+	</body>
+</html>

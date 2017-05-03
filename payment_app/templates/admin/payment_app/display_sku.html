@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html"%}
+{% load i18n admin_urls %}
+{% block content %}
+	{% for product, sku_list in tuple_list %}
+		<h1>{{ product.name }}</h1>
+		{% for sku in sku_list %}
+			<h2> {{sku.attributes }} </h2>
+			<p> inventory : {{sku.inventory}} </p>
+			<form action="{% url 'lower_sku_quantity' sku.id %}" method='POST'>{% csrf_token %}
+				<input type="number" name="quantity" max ={{sku.inventory.quantity}}>
+				<input type="submit" value="substract to sku">
+			</form>
+			<br/>
+		{% endfor %}
+	{% endfor %}
+	<a href="{% url 'admin:index' %}"> go back to admin panel</a>
+{% endblock %}
