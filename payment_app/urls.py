@@ -18,6 +18,9 @@ urlpatterns = [
 	url(r'^lower_sku_quantity/(?P<sku_id>sku_.*)/$', views.lower_sku_quantity, name="lower_sku_quantity"), 
 	url(r'^delete_sku/(?P<sku_id>sku_.*)/$', views.delete_sku, name="delete_sku"), 
 	url(r'^delete_product/(?P<product_id>[0-9]+)/$', views.delete_product, name='delete_product'),
+	url(r'^handle_order_status/(?P<ids>([0-9]*,?[0-9])*)/$', views.handle_order_status, name="handle_order_status"),
+	url(r'^update_order_status/(?P<order_id>[0-9]+)/$', views.update_order_status, name='update_order_status'),
+
 
 	]
 

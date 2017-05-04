@@ -35,6 +35,8 @@ class Product(models.Model):
 class Order(models.Model):
 	stripe_identifier = models.CharField(max_length=55)
 	total_price = models.IntegerField()# in cents
+	def __str__(self):
+		return str(self.id)
 
 
 class Purchase(models.Model):

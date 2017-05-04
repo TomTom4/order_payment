@@ -6,7 +6,6 @@ import json
 from order_payment.settings import STRIPE_SECRET_KEY
 
 admin.site.register(Purchase)
-admin.site.register(Order)
 # Register your models here.
 
 
@@ -52,3 +51,16 @@ class ProductAdmin(admin.ModelAdmin):
 	display_sku.short_description = "Retrieve and display all existing SKU"
 
 admin.site.register(Product, ProductAdmin)
+
+class OrderAdmin(admin.ModelAdmin):
+
+	actions = ['handle_order_status']
+	
+	def handle_order_status(self, request, queryset):
+		selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+		return redirect('handle_order_status',ids= ",".join(selected))
+
+	handle_order_status.short_description = " Handle Order status "
+
+admin.site.register(Order, OrderAdmin)
+
