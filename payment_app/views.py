@@ -32,7 +32,7 @@ def purchase(request, product_id):
 	# *********************************************************************************************
 
 	related_product = get_object_or_404(Product, id=product_id)
-	a_purchase = Purchase(purchaser=user, product=related_product)
+	a_purchase = Purchase(purchaser=user, product=related_product, quantity=request.POST['quantity'])
 	a_dict = dict()
 
 	for a_key in related_product.get_attribute_dict_keys():
@@ -57,10 +57,10 @@ def cancel_purchase(request, purchase_id):
 def index(request):
 	# user = request.user
 	user = User.objects.get(pk=1)
-	purchased_list = get_list_or_404(Purchase, purchaser=user, order_identifier__isnull =True)
+	purchase_list = get_list_or_404(Purchase, purchaser=user, order_identifier__isnull =True)
 	amount = 0
 	for purchase in purchase_list:
-		amount += purchase.product.price
+		amount += purchase.product.price * purchase.quantity
 	context = { 'amount' :amount, 'publishable_key': settings.STRIPE_PUBLISHABLE_KEY,
 			'description':"bucket" } 
 	return render(request, 'payment_app/pay_page.html', context)
@@ -85,7 +85,7 @@ def update_purchase(purchase_list, order):
 def payment(request):
 	# user = request.user
 	user = User.objects.get(pk=1)
-	purchased_list = get_list_or_404(Purchase, purchaser=user, order_identifier__isnull=True)
+	purchase_list = get_list_or_404(Purchase, purchaser=user, order_identifier__isnull=True)
 	stripe.api_key = settings.STRIPE_SECRET_KEY
 	order = stripe.Order.create(currency = settings.CURRENCY,
 					email = request.POST['stripeEmail'] ,
@@ -193,6 +193,3 @@ def delete_product(request, product_id):
 	stripe_product.delete()
 	return redirect(request.META['HTTP_REFERER'])
 
-
-
- 

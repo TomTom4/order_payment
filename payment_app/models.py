@@ -42,6 +42,7 @@ class Purchase(models.Model):
 	purchaser = models.ForeignKey(User, related_name='purchases', on_delete=models.CASCADE)
 	product = models.ForeignKey(Product, related_name='purchase')
 	attribut_dict = models.TextField(blank=True)
+	quantity = models.IntegerField()
 	
 	def set_attribut_dict(self, attribut_dict):
 		self.attribut_dict = json.dumps(attribut_dict)
