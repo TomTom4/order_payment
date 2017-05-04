@@ -73,7 +73,7 @@ def create_item_list( purchase_list, stripe):
 		for a_sku in sku_list:
 			if a_sku.attributes == a_purchase.get_attribut_dict():
 				purchased_sku = a_sku	
-		item_list.append({"type":'sku',	"parent":purchased_sku.id, "quantity":1})
+		item_list.append({"type":'sku',	"parent":purchased_sku.id, "quantity":a_purchase.quantity})
 	return item_list
 
 def update_purchase(purchase_list, order):
