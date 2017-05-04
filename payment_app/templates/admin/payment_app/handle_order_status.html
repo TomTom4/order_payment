@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html"%}
+{% load i18n admin_urls %}
+{% block content %}
+	{% for modelOrder, stripeOrder, username in tuple_list %}
+		
+		<h1>{{username }} ordered : {{modelOrder.stripe_identifier}}</h1><br>
+			<p> order status :  {{stripeOrder.status}}</p><br>
+			<form action="{% url 'update_order_status' modelOrder.id %}" method="POST">{% csrf_token %}
+				<select name='status'>
+					<option value="fulfilled">fullfilled </option>
+					<option value="canceled"> canceled </option>
+					<option value="returned"> returned </option>
+				</select>
+				<input type="submit" value="update">
+			</form>
+	{% endfor %}
+{% endblock %}
