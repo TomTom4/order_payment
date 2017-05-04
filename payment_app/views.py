@@ -231,4 +231,3 @@ def update_order_status(request, order_id):
 	stripe_order.save()
 	return redirect(request.META['HTTP_REFERER'])
 	
-
