@@ -9,6 +9,7 @@ urlpatterns = [
 	url(r'^merchandise_details/(?P<product_id>[0-9]+)/$', views.merchandise_details, name='merchandise_details'),
 	url(r'^purchase/(?P<product_id>[0-9]+)/$', views.purchase, name='purchase'),
 	url(r'^pay_page/$', views.index, name='pay_page'),
+	url(r'^my_profile/$', views.my_profile, name='my_profile'),
 	url(r'^payment/$', views.payment, name ='payment'),
 	url(r'^cancel_all_purchases/$', views.cancel_all_purchases, name="cancel_all_purchases"),
 	url(r'^cancel_purchase/(?P<purchase_id>[0-9]+)/$', views.cancel_purchase, name="cancel_purchase"),

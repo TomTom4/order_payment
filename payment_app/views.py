@@ -20,6 +20,19 @@ def store(request):
 	context = {'product_list':product_list,'purchased_list':purchased_list}
 	return render(request,'payment_app/store.html', context)
 
+def my_profile(request):
+	stripe.api_key = settings.STRIPE_SECRET_KEY
+	# user = request.user
+	user = User.objects.get(pk=1)
+	order_list = Order.objects.all().filter(purchases__in = Purchase.objects.all().filter(purchaser = user))
+	tuple_list = list()
+	for an_order in order_list:
+		stripe_order = stripe.Order.retrieve(an_order.stripe_identifier)
+		tuple_list.append((an_order, stripe_order, list(an_order.purchases.all())))
+
+	return render(request, 'payment_app/my_profile.html', {'tuple_list':tuple_list})
+		
+
 def merchandise_details(request,product_id):
 	product = get_object_or_404(Product, id = product_id)
 	context = {'product': product}
