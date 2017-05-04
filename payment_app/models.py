@@ -50,7 +50,7 @@ class Purchase(models.Model):
 		return json.loads(self.attribut_dict)
 	def __str__(self):
 		if self.order_identifier:
-			return "{0} purchased {1}, and payed it on the order n° : {3}".format(self.purchaser, self.product, self.order_identifier)
+			return "{0} purchased {1}, and payed it on the order n° : {2}".format(self.purchaser, self.product, self.order_identifier)
 		else:
 			return " {0} purchased {1}".format(self.purchaser, self.product)
 

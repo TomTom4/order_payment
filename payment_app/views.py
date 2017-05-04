@@ -14,7 +14,7 @@ def store(request):
 	user = User.objects.get(pk=1)
 	product_list = get_list_or_404(Product, id__gte=1)
 	try:
-		purchased_list = get_list_or_404(Purchase, purchaser= user)
+		purchased_list = get_list_or_404(Purchase, purchaser=user, order_identifier__isnull =True)
 	except:
 		purchased_list = None
 	context = {'product_list':product_list,'purchased_list':purchased_list}
@@ -45,7 +45,7 @@ def purchase(request, product_id):
 def cancel_all_purchases(request):
 	# user = request.user
 	user = User.objects.get(pk=1)
-	Purchase.objects.all().filter(purchaser = user).delete()
+	Purchase.objects.all().filter(purchaser = user, order_identifier__isnull =True).delete()
 	return redirect('store')
 
 def cancel_purchase(request, purchase_id):
@@ -57,7 +57,7 @@ def cancel_purchase(request, purchase_id):
 def index(request):
 	# user = request.user
 	user = User.objects.get(pk=1)
-	purchase_list =get_list_or_404(Purchase,purchaser=user)
+	purchased_list = get_list_or_404(Purchase, purchaser=user, order_identifier__isnull =True)
 	amount = 0
 	for purchase in purchase_list:
 		amount += purchase.product.price
@@ -65,15 +65,46 @@ def index(request):
 			'description':"bucket" } 
 	return render(request, 'payment_app/pay_page.html', context)
 
+def create_item_list( purchase_list, stripe):
+	item_list = list()
+	purchased_sku = None
+	for a_purchase in purchase_list:
+		sku_list = stripe.Product.retrieve(a_purchase.product.stripe_identifier).skus.data
+		for a_sku in sku_list:
+			if a_sku.attributes == a_purchase.get_attribut_dict():
+				purchased_sku = a_sku	
+		item_list.append({"type":'sku',	"parent":purchased_sku.id, "quantity":1})
+	return item_list
+
+def update_purchase(purchase_list, order):
+	for a_purchase in purchase_list:
+		a_purchase.order_identifier = order
+		a_purchase.save()
+		print(a_purchase.order_identifier)
+
 def payment(request):
+	# user = request.user
+	user = User.objects.get(pk=1)
+	purchased_list = get_list_or_404(Purchase, purchaser=user, order_identifier__isnull=True)
 	stripe.api_key = settings.STRIPE_SECRET_KEY
-	token= request.POST['stripeToken']
-	charge = stripe.Charge.create(
-		amount = request.POST['amount'], 
-		currency = 'eur', 
-		description= request.POST['description'], 
-		source = token,
-	)
+	order = stripe.Order.create(currency = settings.CURRENCY,
+					email = request.POST['stripeEmail'] ,
+					items = create_item_list(purchase_list, stripe),
+					shipping = {
+					"name":request.POST['firstname']+' '+request.POST['lastname'],
+					"address":{
+					"line1":request.POST['address'],
+					"city":request.POST['city'],
+					"country":request.POST['country'],
+					"postal_code":request.POST['postal_code']
+					}
+					},
+				)
+	modelOrder = Order(stripe_identifier=order.id , total_price = request.POST['amount'])
+	modelOrder.save()
+	update_purchase(purchase_list, modelOrder)
+	print(order)
+	order.pay(source = request.POST['stripeToken'])
 	return redirect('store')
 
 def create_sku(request, ids):
