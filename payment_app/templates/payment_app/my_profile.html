@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+	<head>
+	</head>
+	<body>
+		{% for an_order, stripe_order, purchase_list in tuple_list %}
+			<p> Order created at :{{ stripe_order.created}}<br>
+			    status :  {{ stripe_order.status }}<br>
+			<form action="{% url 'update_order_status' an_order.id %}" method='POST' >{% csrf_token %}
+				<input type="hidden" name="status" value="canceled">
+				<input type="submit" value="cancel this order">
+			</form>
+			<li> all related purchase <br>
+			{% for a_purchase in purchase_list %}
+				<ul>{{ a_purchase}}</ul>
+			{% endfor %}
+			</li>
+		{% endfor %}
+	</body>
+</html>
