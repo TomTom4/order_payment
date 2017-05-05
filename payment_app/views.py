@@ -34,8 +34,11 @@ def my_profile(request):
 		
 
 def merchandise_details(request,product_id):
+	stripe.api_key = settings.STRIPE_SECRET_KEY
 	product = get_object_or_404(Product, id = product_id)
-	context = {'product': product}
+	stripe_product = stripe.Product.retrieve(product.stripe_identifier)
+	sku_list = stripe_product.skus.data
+	context = {'product': product, 'sku_list': sku_list}
 	return render(request, 'payment_app/merchandise_details.html',context)
 
 def purchase(request, product_id):
@@ -45,13 +48,22 @@ def purchase(request, product_id):
 	# *********************************************************************************************
 
 	related_product = get_object_or_404(Product, id=product_id)
-	a_purchase = Purchase(purchaser=user, product=related_product, quantity=request.POST['quantity'])
-	a_dict = dict()
 
+	a_dict = dict()
 	for a_key in related_product.get_attribute_dict_keys():
 		a_dict[a_key] = request.POST[a_key] 
 
-	a_purchase.set_attribut_dict(a_dict)
+	try:
+		purchase_list = get_list_or_404(Purchase, purchaser= user, order_identifier__isnull = True, product= related_product)
+		for a_related_purchase in purchase_list:
+			if a_related_purchase.get_attribut_dict() == a_dict:
+				a_purchase = a_related_purchase
+				break
+		a_purchase.quantity += int(request.POST['quantity'])
+	except:
+		a_purchase = Purchase(purchaser=user, product=related_product, quantity=request.POST['quantity'])
+		a_purchase.set_attribut_dict(a_dict)
+
 	a_purchase.save()
 	return redirect('store')
 

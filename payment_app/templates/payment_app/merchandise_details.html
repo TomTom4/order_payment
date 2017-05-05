@@ -4,6 +4,11 @@
 	</head>
 	<body>
 		<h1>{{product.description}}</h1>
+		<p>
+		{% for a_sku in sku_list %}	
+		for a {{product.description }} of {{a_sku.attributes}} there is {{ a_sku.inventory.quantity }} left <br>
+		{% endfor %}
+		</p>
 		<form action="{% url 'purchase' product.id %}" method='POST'>{% csrf_token %}
 			{% for a_key in product|get_attribute_dict_keys %}
 			<select name ={{ a_key }}>
