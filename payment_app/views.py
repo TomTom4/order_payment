@@ -8,18 +8,23 @@ from order_payment import settings
 from .models import *
 # Create your views here.
 
+# need to be tested
+def query_all_unordered_purchases(user):
+	return get_list_or_404(Purchase, purchaser=user, order_identifier__isnull =True)
 
+# safe: depend on above
 def store(request):
 	# user = request.user
 	user = User.objects.get(pk=1)
 	product_list = get_list_or_404(Product, id__gte=1)
 	try:
-		purchased_list = get_list_or_404(Purchase, purchaser=user, order_identifier__isnull =True)
+		purchased_list = query_all_unordered_purchases(user)
 	except:
 		purchased_list = None
 	context = {'product_list':product_list,'purchased_list':purchased_list}
 	return render(request,'payment_app/store.html', context)
 
+# need to be refactored and tested
 def my_profile(request):
 	stripe.api_key = settings.STRIPE_SECRET_KEY
 	# user = request.user
@@ -32,7 +37,7 @@ def my_profile(request):
 
 	return render(request, 'payment_app/my_profile.html', {'tuple_list':tuple_list})
 		
-
+# safe
 def merchandise_details(request,product_id):
 	stripe.api_key = settings.STRIPE_SECRET_KEY
 	product = get_object_or_404(Product, id = product_id)
@@ -41,6 +46,7 @@ def merchandise_details(request,product_id):
 	context = {'product': product, 'sku_list': sku_list}
 	return render(request, 'payment_app/merchandise_details.html',context)
 
+# need to be refactored and tested
 def purchase(request, product_id):
 	# user = request.user
 	# Dirty work should use the above instead ! ####################################################
@@ -67,29 +73,25 @@ def purchase(request, product_id):
 	a_purchase.save()
 	return redirect('store')
 
+
+# safe: depend on above
 def cancel_all_purchases(request):
 	# user = request.user
 	user = User.objects.get(pk=1)
-	Purchase.objects.all().filter(purchaser = user, order_identifier__isnull =True).delete()
+	purchase_list = query_all_unordered_purchases(user)
+	for a_purchase in purchase_list:
+		a_purchase.delete()
 	return redirect('store')
 
+# safe: depend on above
 def cancel_purchase(request, purchase_id):
 	# user = request.user
 	user = User.objects.get(pk=1)
-	Purchase.objects.get(pk = purchase_id).delete()
+	purchase = get_object_or_404(Purchase, pk = purchase_id)
+	purchase.delete()
 	return redirect('store')
 
-def index(request):
-	# user = request.user
-	user = User.objects.get(pk=1)
-	purchase_list = get_list_or_404(Purchase, purchaser=user, order_identifier__isnull =True)
-	amount = 0
-	for purchase in purchase_list:
-		amount += purchase.product.price * purchase.quantity
-	context = { 'amount' :amount, 'publishable_key': settings.STRIPE_PUBLISHABLE_KEY,
-			'description':"bucket" } 
-	return render(request, 'payment_app/pay_page.html', context)
-
+# safe: tested
 def create_item_list( purchase_list, stripe):
 	item_list = list()
 	purchased_sku = None
@@ -101,47 +103,67 @@ def create_item_list( purchase_list, stripe):
 		item_list.append({"type":'sku',	"parent":purchased_sku.id, "quantity":a_purchase.quantity})
 	return item_list
 
+# need to be tested
 def update_purchase(purchase_list, order):
 	for a_purchase in purchase_list:
 		a_purchase.order_identifier = order
 		a_purchase.save()
 		print(a_purchase.order_identifier)
 
-def payment(request):
-	# user = request.user
-	user = User.objects.get(pk=1)
-	purchase_list = get_list_or_404(Purchase, purchaser=user, order_identifier__isnull=True)
+
+# safe
+def order(request):
+	return render(request,'payment_app/make_order.html')
+
+# safe: depend on above
+# need to be refactored
+def create_order(request):
+	#user = request.user
+	user = User.objects.get(pk='1')
+	print(user)	
 	stripe.api_key = settings.STRIPE_SECRET_KEY
+
+	purchase_list = query_all_unordered_purchases(user)
 	order = stripe.Order.create(currency = settings.CURRENCY,
-					email = request.POST['stripeEmail'] ,
-					items = create_item_list(purchase_list, stripe),
-					shipping = {
-					"name":request.POST['firstname']+' '+request.POST['lastname'],
-					"address":{
-					"line1":request.POST['address'],
-					"city":request.POST['city'],
-					"country":request.POST['country'],
-					"postal_code":request.POST['postal_code']
-					}
-					},
+				email = request.POST['email'] ,
+				items = create_item_list(purchase_list, stripe),
+				shipping = {
+				"name":request.POST['firstname']+' '+request.POST['lastname'],
+				"address":{
+				"line1":request.POST['address'],
+				"city":request.POST['city'],
+				"country":request.POST['country'],
+				"postal_code":request.POST['postal_code']
+				}
+				},
 				)
-	modelOrder = Order(stripe_identifier=order.id , total_price = request.POST['amount'])
+	modelOrder = Order(stripe_identifier=order.id , total_price = order.amount)
 	modelOrder.save()
 	update_purchase(purchase_list, modelOrder)
-	print(order)
+	context= {'modelOrder':modelOrder, 'order':order, 'purchase_list':purchase_list, 'publishable_key': settings.STRIPE_PUBLISHABLE_KEY, 'description':"bucket" }
+	return render(request, 'payment_app/pay_page.html', context)
+
+# safe
+def payment(request, order_id):
+	# user = request.user
+	user = User.objects.get(pk=1)
+	modelOrder = get_object_or_404(Order, pk=order_id)
+	stripe.api_key = settings.STRIPE_SECRET_KEY
+	order = stripe.Order.retrieve(modelOrder.stripe_identifier)
 	order.pay(source = request.POST['stripeToken'])
 	return redirect('store')
 
+# need to be refactored and tested
 def create_sku(request, ids):
 	id_list = [int(pk) for pk in ids.split(',')]
 	product_list = get_list_or_404(Product, id__in = id_list)
-	print(product_list)
 	context = {'product_list':product_list}
 	return render(request, 'admin/payment_app/create_sku.html',context)
 
 
+# need to be refactored and tested
 def create_sku_form(request, product_id):
-	# to be able to perform an sku creation, we need to provide our secret key to stripe
+	# to be able to perform a sku creation, we need to provide our secret key to stripe
 	stripe.api_key = settings.STRIPE_SECRET_KEY
 
 	# retrieving the corresponding product
@@ -169,6 +191,7 @@ def create_sku_form(request, product_id):
 	stripe.SKU.create( product = a_product.stripe_identifier, attributes= chosen_attributes, price= a_product.price,currency = settings.CURRENCY, inventory = inventory_dict)
 	return redirect(request.META['HTTP_REFERER'])
 
+# need to be refactored and tested
 def display_sku(request, ids):
 	# needed to retrieve products from stripe
 	stripe.api_key= settings.STRIPE_SECRET_KEY
@@ -188,7 +211,8 @@ def display_sku(request, ids):
 			tuple_list.append((a_product, []))
 	print(tuple_list)
 	return render(request,'admin/payment_app/display_sku.html', {'tuple_list': tuple_list})
-		
+
+# need to be refactored and tested
 def lower_sku_quantity(request, sku_id ):
 	# needed to retrieve the skus
 	stripe.api_key=settings.STRIPE_SECRET_KEY
@@ -199,7 +223,9 @@ def lower_sku_quantity(request, sku_id ):
 		a_sku.inventory['quantity'] = '0'
 	a_sku.save()
 	return redirect(request.META['HTTP_REFERER'])
-	
+
+
+# safe
 def delete_sku(request, sku_id):
 	# needed to retrieve the skus
 	stripe.api_key=settings.STRIPE_SECRET_KEY
@@ -207,7 +233,7 @@ def delete_sku(request, sku_id):
 	a_sku.delete()
 	return redirect(request.META['HTTP_REFERER'])
 
-
+# safe
 def delete_product(request, product_id):
 	# needed to retrieve the product
 	stripe.api_key=settings.STRIPE_SECRET_KEY
@@ -218,6 +244,7 @@ def delete_product(request, product_id):
 	stripe_product.delete()
 	return redirect(request.META['HTTP_REFERER'])
 
+#need to be refactored and tested
 def handle_order_status(request, ids):
 	# needed to retrieve orders from stripe
 	stripe.api_key= settings.STRIPE_SECRET_KEY
@@ -234,7 +261,7 @@ def handle_order_status(request, ids):
 
 	return render(request, 'admin/payment_app/handle_order_status.html', {'tuple_list':tuple_list})
 
-
+# safe
 def update_order_status(request, order_id):
 	order_to_update = get_object_or_404(Order, id = order_id)
 	stripe.api_key = settings.STRIPE_SECRET_KEY

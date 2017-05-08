@@ -7,32 +7,20 @@
 	</head>
 	<body>
 		<h1> pay your shit : </h1>
-		<form action="{% url 'payment'%}" method="POST">{% csrf_token %}
-			First name:<br>
-			<input type="text" name="firstname"><br>
-			Last name:<br>
-			<input type="text" name="lastname"><br>
-			City:<br>
-			<input type="text" name="city"><br>
-			Shipping address:<br>
-			<input type="text" name="address"><br>
-			Postal code :<br>
-			<input type="text" name="postal_code"><br>
-			Country:<br>
-			<input type="text" name="country"><br>
-			<br>
+		{% for purchase in purchase_list %}
+			<p>you ordered a {{purchase.product}}. Price : {{purchase.product.price}}</p>
+		{% endfor %}
+		<form action="{% url 'payment' modelOrder.id %}" method="POST">{% csrf_token %}
 			<script
     				src="https://checkout.stripe.com/checkout.js" class="stripe-button"
     				data-key= {{ publishable_key }}
-    				data-amount={{ amount }}
+    				data-amount={{order.amount}}
     				data-name="Thomas_make_you_pay.com"
 				data-description ={{ description }}
     				data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
     				data-locale="auto"
     				data-zip-code="true">
 			</script>
-			<input type="hidden" name="amount" value={{amount}}>
-			<input type="hidden" name="description" value={{description}}>
 		</form>
 	</body>
 </html>
