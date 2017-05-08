@@ -102,3 +102,4 @@ class createOrderTestCase(TestCase):
 		for stripe_product in stripe_products:
 			stripe_product.delete()
 
+
