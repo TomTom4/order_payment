@@ -1,0 +1,29 @@
+<!doctype html>
+
+<html lang="en">
+	<head>	
+		<meta charset="utf-8">
+		<title> MonkingMe </title>
+	</head>
+	<body>
+		<h1> order your shit : </h1>
+		<form action="{% url 'create_order'%}" method="POST">{% csrf_token %}
+			Email<br>
+			<input type="email" name="email" ><br>
+			First name:<br>
+			<input type="text" name="firstname"><br>
+			Last name:<br>
+			<input type="text" name="lastname"><br>
+			City:<br>
+			<input type="text" name="city"><br>
+			Shipping address:<br>
+			<input type="text" name="address"><br>
+			Postal code :<br>
+			<input type="text" name="postal_code"><br>
+			Country:<br>
+			<input type="text" name="country"><br>
+			<br>
+			<input type="submit" value="Order">
+		</form>
+	</body>
+</html>
