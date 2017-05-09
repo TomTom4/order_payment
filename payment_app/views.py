@@ -291,22 +291,26 @@ def delete_product(request, product_id):
 	stripe_product.delete()
 	return redirect(request.META['HTTP_REFERER'])
 
-#need to be refactored and tested
-def handle_order_status(request, ids):
-	# needed to retrieve orders from stripe
-	stripe.api_key= settings.STRIPE_SECRET_KEY
-
-	# needed to retrieve orders and their skus from stripe
-	id_list = [int(pk) for pk in ids.split(',')]
-	order_list = get_list_or_404(Order, id__in = id_list)
-
+# need to be tested
+def create_handle_order_status_context(order_list):
 	tuple_list = list()
 	for an_order in order_list:
 		username = an_order.purchases.all()[0].purchaser.username
 		stripe_order = stripe.Order.retrieve(an_order.stripe_identifier)
 		tuple_list.append((an_order, stripe_order, username))
+	return {'tuple_list':tuple_list}
 
-	return render(request, 'admin/payment_app/handle_order_status.html', {'tuple_list':tuple_list})
+
+# safe: depend on the above
+def handle_order_status(request, ids):
+	# needed to retrieve orders from stripe
+	stripe.api_key= settings.STRIPE_SECRET_KEY
+
+	# needed to retrieve orders and their skus from stripe
+	id_list = parse_csv_into_list(ids)
+	order_list = get_list_or_404(Order, id__in = id_list)
+	context = create_handle_order_status(order_list)
+	return render(request, 'admin/payment_app/handle_order_status.html', context) 
 
 # safe
 def update_order_status(request, order_id):
