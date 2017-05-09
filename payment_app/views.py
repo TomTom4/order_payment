@@ -121,7 +121,6 @@ def order(request):
 	return render(request,'payment_app/make_order.html')
 
 # safe: depend on above
-# need to be refactored
 def create_order(request):
 	#user = request.user
 	user = User.objects.get(pk='1')
@@ -229,15 +228,10 @@ def create_sku_form(request, product_id):
 		create_sku_on_stripe(request, a_product, chosen_attributes)
 		return redirect(request.META['HTTP_REFERER'])
 
-
-# need to be refactored and tested
-def display_sku(request, ids):
+# need to be tested
+def create_display_sku_context(product_list):
 	# needed to retrieve products from stripe
 	stripe.api_key= settings.STRIPE_SECRET_KEY
-
-	# needed to retrieve products and their skus from stripe
-	id_list = [int(pk) for pk in ids.split(',')]
-	product_list = get_list_or_404(Product, id__in = id_list)
 
 	tuple_list = list()
 	for a_product in product_list:
@@ -248,19 +242,33 @@ def display_sku(request, ids):
 			tuple_list.append((a_product, sku_list))
 		except:
 			tuple_list.append((a_product, []))
-	print(tuple_list)
-	return render(request,'admin/payment_app/display_sku.html', {'tuple_list': tuple_list})
+	return {'tuple_list':tuple_list} 
 
-# need to be refactored and tested
-def lower_sku_quantity(request, sku_id ):
-	# needed to retrieve the skus
-	stripe.api_key=settings.STRIPE_SECRET_KEY
-	a_sku = stripe.SKU.retrieve(sku_id)
+
+# safe: depend on the above
+def display_sku(request, ids):
+	# needed to retrieve products and their skus from stripe
+	id_list = parse_csv_into_list(ids)
+	product_list = get_list_or_404(Product, id__in = id_list)
+	context = create_display_sku_context(product_list)
+	return render(request,'admin/payment_app/display_sku.html', context)
+
+
+# need to be tested
+def udpate_sku_quantity(request, sku):
 	if int( a_sku.inventory['quantity']) > int(request.POST['quantity']):
 		a_sku.inventory['quantity'] =str( int(a_sku.inventory['quantity'])+ int(request.POST['quantity']))
 	else:
 		a_sku.inventory['quantity'] = '0'
 	a_sku.save()
+
+
+# safe: depend on the above 
+def lower_sku_quantity(request, sku_id ):
+	# needed to retrieve the skus
+	stripe.api_key=settings.STRIPE_SECRET_KEY
+	a_sku = stripe.SKU.retrieve(sku_id)
+	update_sku_quantity(request, sku)
 	return redirect(request.META['HTTP_REFERER'])
 
 
