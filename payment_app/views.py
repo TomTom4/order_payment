@@ -206,7 +206,7 @@ def update_sku_quantity(request, sku):
 
 
 # safe
-def create_sku_on_stripe(request, product, chosen_attributes):
+def create_sku_on_stripe(request, a_product, chosen_attributes):
 	# passing the number of sku we add, and if it is finite... 
 	inventory_dict ={'type':'finite', 'quantity':request.POST['quantity']}
 	try:
@@ -312,7 +312,7 @@ def handle_order_status(request, ids):
 	# needed to retrieve orders and their skus from stripe
 	id_list = parse_csv_into_list(ids)
 	order_list = get_list_or_404(Order, id__in = id_list)
-	context = create_handle_order_status(order_list)
+	context = create_handle_order_status_context(order_list)
 	return render(request, 'admin/payment_app/handle_order_status.html', context) 
 
 # safe
