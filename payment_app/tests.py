@@ -8,6 +8,12 @@ SECRET_KEY = "sk_test_BQokikJOvBiI2HlWgH4olfQ2"
 
 # Create your tests here.
 
+# class to simulate request.POST
+class RequestFixture:
+
+	def __init__(self, dic):
+		self.POST = dic 
+
 
 class createOrderTestCase(TestCase):
 
@@ -160,6 +166,18 @@ class PurchaseTestCase(TestCase):
 				self.assertNotEqual(purchase.order_identifier , order)
 
 
+	def test_find_related_purchase_1(self):
+		purchase_list = Purchase.objects.all().filter(product = Product.objects.get(pk=3))
+		a_purchase = find_related_purchase({"size":"m"},purchase_list)
+		self.assertEqual(a_purchase, Purchase.objects.get(pk=5))
+		
+	def test_find_related_purchase_2(self):
+		purchase_list = Purchase.objects.all().filter(product = Product.objects.get(pk=3))
+		a_purchase = find_related_purchase({"size":"s"},purchase_list)
+		self.assertEqual(a_purchase, None)
+		
+
+
 
 class CsvParsingTestCase(TestCase):
 	
@@ -180,10 +198,6 @@ class SkuHandlingTestCase(TestCase):
 	stripe.api_key = SECRET_KEY
 	fixtures = ['createOrder.json']
 	
-	class RequestFixture:
-
-		def __init__(self, dic):
-			self.POST = dic 
 	
 
 	# test when sku.quantity > request.POST['quantity']
@@ -218,7 +232,7 @@ class SkuHandlingTestCase(TestCase):
 			a_product.stripe_identifier = stripe_product.id
 			a_product.save()
 
-		request = self.RequestFixture({'quantity': -2})
+		request = RequestFixture({'quantity': -2})
 		update_sku_quantity(request, stripe_skus[0])
 		self.assertEqual(stripe_skus[0].inventory['quantity'], 3)
 
@@ -261,7 +275,7 @@ class SkuHandlingTestCase(TestCase):
 			a_product.stripe_identifier = stripe_product.id
 			a_product.save()
 
-		request = self.RequestFixture({'quantity': -6})
+		request = RequestFixture({'quantity': -6})
 		update_sku_quantity(request, stripe_skus[0])
 		self.assertEqual(stripe_skus[0].inventory['quantity'], 0)
 
@@ -307,10 +321,16 @@ class HandleSKUTestCase(TestCase):
 				stripe_skus.append(sku)
 			a_product.stripe_identifier = stripe_product.id
 			a_product.save()
-		print(stripe_skus[0:2])
 		output = find_chosen_sku(stripe_skus[0:2],{"size":"m"})
 		expected_output = stripe_skus[1]
 		self.assertEqual(output, expected_output)
+
+		# destroying every created stuff on stripe database to avoid side effects
+		for sku in stripe_skus:
+			sku.delete()
+		for stripe_product in stripe_products:
+			stripe_product.delete()
+
 
 	def test_find_chosen_sku_2(self):
 		stripe_products = list()
@@ -347,3 +367,61 @@ class HandleSKUTestCase(TestCase):
 		expected_output = None
 		self.assertEqual(output, expected_output)
 
+		# destroying every created stuff on stripe database to avoid side effects
+		for sku in stripe_skus:
+			sku.delete()
+		for stripe_product in stripe_products:
+			stripe_product.delete()
+
+
+class ParseAndRetrieveTestCase(TestCase):
+
+	fixtures = ['parseAndRetrieve.json']
+	
+	def test_parse_and_retrieve_chosen_attributes(self):
+
+		stripe_products = list()
+		stripe_skus = list()
+		purchase_list = Purchase.objects.all()
+		
+		for a_purchase in purchase_list:
+			a_product = a_purchase.product
+	
+			stripe.api_key = SECRET_KEY
+			stripe_product = stripe.Product.create(
+						name= a_product.name,
+						description= a_product.description,
+						attributes=list(a_product.get_attribute_dict_keys())
+						)
+			stripe_products.append(stripe_product)
+			for size in ['s','m','l']:
+				sku = stripe.SKU.create(
+						product=stripe_product.id,
+						attributes={
+    								"size":size,
+								"color":"red",
+  							},
+  						price=1500,
+  						currency="usd",
+  						inventory={
+    						"type": "finite",
+    						"quantity": 5
+  						}
+					)
+				stripe_skus.append(sku)
+			a_product.stripe_identifier = stripe_product.id
+			a_product.save()
+		
+		request = RequestFixture({"size":"l", "color":"red"})
+		a_product = Product.objects.get(pk=1)
+		chosen_attributes = parse_and_retrieve_chosen_attributes(request, a_product)
+		self.assertDictEqual(chosen_attributes,{"size": "l", "color":"red"})
+
+
+		# destroying every created stuff on stripe database to avoid side effects
+		for sku in stripe_skus:
+			sku.delete()
+		for stripe_product in stripe_products:
+			stripe_product.delete()
+
+	

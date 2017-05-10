@@ -51,7 +51,29 @@ def merchandise_details(request,product_id):
 	return render(request, 'payment_app/merchandise_details.html',context)
 
 
-# TODO:need to be refactored and tested
+# tested
+# need of all attribute keys to automatically parse the request.POST
+def parse_and_retrieve_chosen_attributes(request, product):
+	attribute_keys = json.loads(product.attribute_dict).keys()
+	chosen_attributes = dict()
+	for a_key in attribute_keys:
+		chosen_attributes[a_key] = request.POST[a_key]
+
+	return chosen_attributes
+
+
+# tested
+def find_related_purchase(chosen_attributes, purchase_list):
+	a_purchase = None
+	for a_related_purchase in purchase_list:
+		if a_related_purchase.get_attribut_dict() == chosen_attributes:
+			a_purchase = a_related_purchase
+			break
+	return a_purchase
+
+
+
+# safe
 def purchase(request, product_id):
 	# user = request.user
 	# Dirty work should use the above instead ! ####################################################
@@ -60,16 +82,11 @@ def purchase(request, product_id):
 
 	related_product = get_object_or_404(Product, id=product_id)
 
-	a_dict = dict()
-	for a_key in related_product.get_attribute_dict_keys():
-		a_dict[a_key] = request.POST[a_key] 
+	a_dict = parse_and_retrieve_chosen_attributes(request, related_product) 
 
 	try:
 		purchase_list = get_list_or_404(Purchase, purchaser= user, order_identifier__isnull = True, product= related_product)
-		for a_related_purchase in purchase_list:
-			if a_related_purchase.get_attribut_dict() == a_dict:
-				a_purchase = a_related_purchase
-				break
+		a_purchase = find_related_purchase(a_dict, purchase_list)
 		a_purchase.quantity += int(request.POST['quantity'])
 	except:
 		a_purchase = Purchase(purchaser=user, product=related_product, quantity=request.POST['quantity'])
@@ -167,16 +184,6 @@ def create_sku(request, ids):
 	product_list = get_list_or_404(Product, id__in = id_list)
 	context = {'product_list':product_list}
 	return render(request, 'admin/payment_app/create_sku.html',context)
-
-# TODO:need to be tested
-# need of all attribute keys to automatically parse the request.POST
-def parse_and_retrieve_chosen_attributes(request, product):
-	attribute_keys = json.loads(product.attribute_dict).keys()
-	chosen_attributes = dict()
-	for a_key in attribute_keys:
-		chosen_attributes[a_key] = request.POST[a_key]
-
-	return chosen_attributes
 
 
 # tested
