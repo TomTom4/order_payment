@@ -8,7 +8,7 @@ from order_payment import settings
 from .models import *
 # Create your views here.
 
-# need to be tested
+# tested
 def query_all_unordered_purchases(user):
 	return get_list_or_404(Purchase, purchaser=user, order_identifier__isnull =True)
 
@@ -24,7 +24,7 @@ def store(request):
 	context = {'product_list':product_list,'purchased_list':purchased_list}
 	return render(request,'payment_app/store.html', context)
 
-# need to be tested
+# safe 
 def build_my_profile_context(order_list):
 	tuple_list = list()
 	for an_order in order_list:
@@ -32,7 +32,7 @@ def build_my_profile_context(order_list):
 		tuple_list.append((an_order, stripe_order, list(an_order.purchases.all())))
 	return {'tuple_list':tuple_list}
 
-# safe depend on the above 
+# safe  
 def my_profile(request):
 	stripe.api_key = settings.STRIPE_SECRET_KEY
 	# user = request.user
@@ -51,7 +51,7 @@ def merchandise_details(request,product_id):
 	return render(request, 'payment_app/merchandise_details.html',context)
 
 
-# need to be refactored and tested
+# TODO:need to be refactored and tested
 def purchase(request, product_id):
 	# user = request.user
 	# Dirty work should use the above instead ! ####################################################
@@ -88,7 +88,7 @@ def cancel_all_purchases(request):
 		a_purchase.delete()
 	return redirect('store')
 
-# safe: depend on above
+# safe
 def cancel_purchase(request, purchase_id):
 	# user = request.user
 	user = User.objects.get(pk=1)
@@ -108,7 +108,7 @@ def create_item_list( purchase_list, stripe):
 		item_list.append({"type":'sku',	"parent":purchased_sku.id, "quantity":a_purchase.quantity})
 	return item_list
 
-# need to be tested
+# tested
 def update_purchase(purchase_list, order):
 	for a_purchase in purchase_list:
 		a_purchase.order_identifier = order
@@ -157,18 +157,18 @@ def payment(request, order_id):
 	order.pay(source = request.POST['stripeToken'])
 	return redirect('store')
 
-# need to be tested
+# tested
 def parse_csv_into_list(data):
 	return [int(el) for el in data.split(',')]
 
-# safe :depend on the above 
+# safe:	depend on the above 
 def create_sku(request, ids):
 	id_list = parse_csv_into_list(ids)
 	product_list = get_list_or_404(Product, id__in = id_list)
 	context = {'product_list':product_list}
 	return render(request, 'admin/payment_app/create_sku.html',context)
 
-#need to be tested
+# TODO:need to be tested
 # need of all attribute keys to automatically parse the request.POST
 def parse_and_retrieve_chosen_attributes(request, product):
 	attribute_keys = json.loads(product.attribute_dict).keys()
@@ -179,23 +179,26 @@ def parse_and_retrieve_chosen_attributes(request, product):
 	return chosen_attributes
 
 
-# need to be tested
+# tested
 # find a sku accordingly to chosen_attributes and return it. If not , it returns None object	
 def find_chosen_sku(sku_list, chosen_attributes):
 	chosen_sku = None
 	for a_sku in sku_list:
-		if a_sku.attributes == chosen_attributes:
-			chosent_sku = a_sku
+		if dict(a_sku.attributes) == chosen_attributes:
+			chosen_sku = a_sku
 	return chosen_sku
 
 
-# need to be tested
-def update_sku(request, sku):
-	a_sku.inventory['quantity'] =str( int(a_sku.inventory['quantity'])+ int(request.POST['quantity']))
-	a_sku.save()
+# tested
+def update_sku_quantity(request, sku):
+	if int( sku.inventory['quantity']) + int(request.POST['quantity']) > 0:
+		sku.inventory['quantity'] =str( int(sku.inventory['quantity'])+ int(request.POST['quantity']))
+	else:
+		sku.inventory['quantity'] = '0'
+	sku.save()
 
 
-# need to be tested
+# safe
 def create_sku_on_stripe(request, product, chosen_attributes):
 	# passing the number of sku we add, and if it is finite... 
 	inventory_dict ={'type':'finite', 'quantity':request.POST['quantity']}
@@ -221,14 +224,14 @@ def create_sku_form(request, product_id):
 	SKU = stripe.SKU.list(product = a_product.stripe_identifier)
 	sku = find_chosen_sku(SKU, chosen_attributes)
 	if sku:
-		update_sku(request, sku)
+		update_sku_quantity(request, sku)
 		return redirect(request.META['HTTP_REFERER'])
 	else:
 		# if there is not an already existing sku with this attributes, we create one. 
 		create_sku_on_stripe(request, a_product, chosen_attributes)
 		return redirect(request.META['HTTP_REFERER'])
 
-# need to be tested
+# easy to find a bugg here: it's only display 
 def create_display_sku_context(product_list):
 	# needed to retrieve products from stripe
 	stripe.api_key= settings.STRIPE_SECRET_KEY
@@ -254,13 +257,6 @@ def display_sku(request, ids):
 	return render(request,'admin/payment_app/display_sku.html', context)
 
 
-# need to be tested
-def udpate_sku_quantity(request, sku):
-	if int( a_sku.inventory['quantity']) > int(request.POST['quantity']):
-		a_sku.inventory['quantity'] =str( int(a_sku.inventory['quantity'])+ int(request.POST['quantity']))
-	else:
-		a_sku.inventory['quantity'] = '0'
-	a_sku.save()
 
 
 # safe: depend on the above 
@@ -291,7 +287,7 @@ def delete_product(request, product_id):
 	stripe_product.delete()
 	return redirect(request.META['HTTP_REFERER'])
 
-# need to be tested
+# easy to find a bug here: its only display
 def create_handle_order_status_context(order_list):
 	tuple_list = list()
 	for an_order in order_list:
@@ -301,7 +297,7 @@ def create_handle_order_status_context(order_list):
 	return {'tuple_list':tuple_list}
 
 
-# safe: depend on the above
+# safe
 def handle_order_status(request, ids):
 	# needed to retrieve orders from stripe
 	stripe.api_key= settings.STRIPE_SECRET_KEY
