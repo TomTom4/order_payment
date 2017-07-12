@@ -1,6 +1,7 @@
 from django.template.defaulttags import register
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.translation import ugettext as _
 import json
 
 
@@ -9,6 +10,9 @@ class Product(models.Model):
 	name = models.CharField(max_length=55)
 	stripe_identifier = models.CharField(max_length=255,blank=True, default=None)
 	remaining_items = models.IntegerField()
+
+
+	STANDARD= _("this is a standard product of quality")
 	description = models.CharField(max_length=255)
 	attribute_dict = models.TextField()
 	price = models.IntegerField()

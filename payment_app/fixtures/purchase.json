@@ -1,0 +1,134 @@
+[
+	{
+	"model": "auth.user",
+	 "pk": 1,
+	 "fields": {
+			"password": "pbkdf2_sha256$36000$3PxwtfPGtKE0$F/8dFNYxGBKRSfHbadcnTY7qbgkB8ateisdOu+gshPM=",
+	 		"last_login": null,
+	 		"is_superuser": false,
+	 		"username": "thomas",
+	 		"first_name": "",
+		 	"last_name": "",
+		 	"email": "thomas@mail.com",
+			 "is_staff": false,
+			 "is_active": true,
+			 "date_joined": "2017-04-28T15:16:28.492Z",
+	 		"groups": [],
+			 "user_permissions": []
+		}
+	},
+	 {"model": "auth.user",
+	 "pk": 2,
+	 "fields": {
+	 	"password": "pbkdf2_sha256$36000$8eqidAczK9bB$u4snp4XUVfUsy5u//df6v2EckctgDy3+UphVjTJjKwI=",
+	 	"last_login": "2017-05-01T09:35:01.743Z",
+	 	"is_superuser": true,
+		 "username": "tomtom",
+		 "first_name": "",
+		 "last_name": "",
+		 "email": "tomtom@tomtom.com",
+		 "is_staff": true,
+		 "is_active": true,
+		 "date_joined": "2017-05-01T09:34:14.938Z",
+		 "groups": [],
+		 "user_permissions": []
+		}
+	},
+	{
+	"model": "payment_app.order",
+	 "pk": 1,
+	 "fields": {
+			"stripe_identifier": "or_1AHTne2eZvKYlo2CCWMei22q", 
+			"total_price": 1200
+		}
+	},
+
+	{
+	"model": "payment_app.product",
+	"pk": 1,
+	"fields": {
+		"name": "T_shirt",
+		"stripe_identifier":"",
+		"remaining_items": 0,
+		"description": "a fabulous t-shirt !",
+		"attribute_dict": "{\"size\":[\"s\",\"m\",\"l\"]}",
+		"price": 1500
+		}
+	},
+	{
+	"model": "payment_app.product",
+	"pk": 2,
+	"fields": {
+		"name": "U_shirt",
+		"stripe_identifier":"",
+		"remaining_items": 0,
+		"description": "a fabulous u-shirt !",
+		"attribute_dict": "{\"size\":[\"s\",\"m\",\"l\"]}",
+		"price": 1000
+		}
+	},
+	{
+	"model": "payment_app.product",
+	"pk": 3,
+	"fields": {
+		"name": "X_shirt",
+		"stripe_identifier":"",
+		"remaining_items": 0,
+		"description": "a fabulous x-shirt !",
+		"attribute_dict": "{\"size\":[\"s\",\"m\",\"l\"]}",
+		"price": 3000
+		}
+	},
+	{
+		"model": "payment_app.purchase",
+ 		"pk":1,
+		"fields": {
+ 				"purchaser": 1,
+ 				"product": 1,
+ 				"attribut_dict": "{\"size\": \"m\"}",
+ 				"quantity": 1
+			}
+	},
+	{
+		"model": "payment_app.purchase",
+ 		"pk":2,
+		"fields": {
+ 				"purchaser": 1,
+ 				"product": 2,
+ 				"attribut_dict": "{\"size\": \"m\"}",
+ 				"quantity": 1
+			}
+	},
+	{
+		"model": "payment_app.purchase",
+ 		"pk":3,
+		"fields": {
+ 				"purchaser": 1,
+ 				"product": 1,
+ 				"attribut_dict": "{\"size\": \"m\"}",
+ 				"quantity": 1
+			}
+	},
+	{
+		"model": "payment_app.purchase",
+ 		"pk":4,
+		"fields": {
+ 				"purchaser": 1,
+ 				"product": 2,
+ 				"attribut_dict": "{\"size\": \"m\"}",
+ 				"quantity": 1
+			}
+	},
+	{
+		"model": "payment_app.purchase",
+ 		"pk":5,
+		"fields": {
+ 				"purchaser": 2,
+ 				"product": 3,
+ 				"attribut_dict": "{\"size\": \"m\"}",
+ 				"quantity": 1
+			}
+	}
+
+
+]

@@ -6,6 +6,7 @@ from django.urls import reverse
 import stripe
 from order_payment import settings
 from .models import *
+from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 
 # tested
@@ -13,6 +14,7 @@ def query_all_unordered_purchases(user):
 	return get_list_or_404(Purchase, purchaser=user, order_identifier__isnull =True)
 
 # safe: depend on above
+@csrf_exempt
 def store(request):
 	# user = request.user
 	user = User.objects.get(pk=1)
@@ -22,7 +24,7 @@ def store(request):
 	except:
 		purchased_list = None
 	context = {'product_list':product_list,'purchased_list':purchased_list}
-	return render(request,'payment_app/store.html', context)
+	return render(request,'payment_app/test_mercha_mail.html', context)
 
 # safe 
 def build_my_profile_context(order_list):

@@ -1,0 +1,14 @@
+[
+	{
+	"model": "payment_app.product",
+	"pk": 1,
+	"fields": {
+		"name": "T_shirt",
+		"stripe_identifier":"",
+		"remaining_items": 0,
+		"description": "a fabulous t-shirt !",
+		"attribute_dict": "{\"size\":[\"s\",\"m\",\"l\"], \"color\":[\"red\"]}",
+		"price": 1500
+		}
+	}
+]
