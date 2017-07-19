@@ -1,12 +1,11 @@
 <!doctype html>
-
 <html lang="en">
 	<head>	
 		<meta charset="utf-8">
 		<title> MonkingMe </title>
 	</head>
 	<body>
-		<h1> order your shit : </h1>
+		<h1> order: </h1>
 		<form action="{% url 'create_order'%}" method="POST">{% csrf_token %}
 			Email<br>
 			<input type="email" name="email" ><br>

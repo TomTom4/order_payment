@@ -9,6 +9,10 @@ from .models import *
 from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 
+from .forms import RegisterForm
+
+def show_register_form(request):
+	render(request, 'payment_app/register.html', {'form':RegisterForm()})
 # tested
 def query_all_unordered_purchases(user):
 	return get_list_or_404(Purchase, purchaser=user, order_identifier__isnull =True)
