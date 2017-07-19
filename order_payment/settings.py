@@ -106,7 +106,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'OPTIONS': {
             'min_score': 3,
             'user_attributes': ('username', 'email', 'first_name', 'last_name')
-    } 
+        } 
+    }
 ]
 
 

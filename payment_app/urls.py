@@ -5,7 +5,8 @@ from . import views
 
 urlpatterns = [
 	url(r'^accounts/login/$', login, {'template_name': 'admin/login.html'}),
-	url(r'^$', views.store, name='store'),
+	url(r'^$', views.show_register_form, name='register'),
+	
 	url(r'^merchandise_details/(?P<product_id>[0-9]+)/$', views.merchandise_details, name='merchandise_details'),
 	url(r'^purchase/(?P<product_id>[0-9]+)/$', views.purchase, name='purchase'),
 	url(r'^order/$', views.order, name='order'),

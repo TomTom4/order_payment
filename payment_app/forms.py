@@ -8,11 +8,11 @@ class RegisterForm(forms.Form):
 	password2 = PasswordConfirmationField(confirm_with='password1')
 
 
-	def clean():
+	def clean(self):
 		password = self.cleaned_data.get('password1')
 		passwordVerification = self.cleaned_data.get('password2')
 
 		if password:
 			score = zxcvbn(password, [passwordVerification])['score']
 	
-	return self.cleaned_data
+		return self.cleaned_data

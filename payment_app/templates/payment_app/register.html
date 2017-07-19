@@ -7,9 +7,11 @@
 		<title> MonkingMe </title>
 	</head>
 	<body>
-
-		{{form}}
-		{{form.media}}
+		<form action="{% url 'register' %}" method= 'POST'>{% csrf_token %}
+			{{form}}
+			{{form.media}}
+		<button type="submit" name="register">
+		</form>
 
 	</body>
 <html>

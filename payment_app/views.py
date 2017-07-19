@@ -12,7 +12,13 @@ from django.views.decorators.csrf import csrf_exempt
 from .forms import RegisterForm
 
 def show_register_form(request):
-	render(request, 'payment_app/register.html', {'form':RegisterForm()})
+	if request.method == 'POST':
+		form = RegisterForm(request.POST)
+		print("here is the return from clean")
+		print(form.clean())
+		return render(request, 'payment_app/register.html', {'form':form.clean()})
+	else:
+		return render(request, 'payment_app/register.html', {'form':RegisterForm()})
 # tested
 def query_all_unordered_purchases(user):
 	return get_list_or_404(Purchase, purchaser=user, order_identifier__isnull =True)
