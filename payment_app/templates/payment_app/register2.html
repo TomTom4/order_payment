@@ -1,0 +1,28 @@
+<!doctype html>
+
+<html lang="en">
+	<head>	
+		<meta charset="utf-8">
+		<title> MonkingMe </title>
+	</head>
+	<body>
+		<script type="text/javascript" src="zxcvbn.js"></script>
+		<script>
+			function validationColor(){
+				var pswd = document.forms["totoForm"]["password"].value;	
+				var email = document.forms["totoForm"]["email"].value;
+	
+				var result = zxcvbn(pswd, [email]);	
+				document.getElementsByTagName("P")[0].innerHTML = result.crack_time;
+			}
+		</script>
+
+
+		<form name="totoForm">
+			<label>tap your email here</label><input type="email" name="email"><br>
+			<label>tap your password here</label><input type="password" name="password" onchange="validationColor()">
+		</form>
+		<p> validation :  red,yellow or green </p>
+
+	</body>
+<html>

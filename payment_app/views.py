@@ -14,11 +14,13 @@ from .forms import RegisterForm
 def show_register_form(request):
 	if request.method == 'POST':
 		form = RegisterForm(request.POST)
-		print("here is the return from clean")
-		print(form.clean())
-		return render(request, 'payment_app/register.html', {'form':form.clean()})
+		if form.is_valid():
+			form.clean()
+			return render(request, 'payment_app/register.html', {'score':form.score})
 	else:
 		return render(request, 'payment_app/register.html', {'form':RegisterForm()})
+
+
 # tested
 def query_all_unordered_purchases(user):
 	return get_list_or_404(Purchase, purchaser=user, order_identifier__isnull =True)

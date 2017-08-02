@@ -14,5 +14,4 @@ class RegisterForm(forms.Form):
 
 		if password:
 			score = zxcvbn(password, [passwordVerification])['score']
-	
 		return self.cleaned_data

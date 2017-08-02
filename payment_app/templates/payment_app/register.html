@@ -10,8 +10,11 @@
 		<form action="{% url 'register' %}" method= 'POST'>{% csrf_token %}
 			{{form}}
 			{{form.media}}
+			<p> the score is {{ score }} </p>
 		<button type="submit" name="register">
 		</form>
 
 	</body>
+<script type="text/javascript" src="zxcvbn-async.js">
+</script>
 <html>
